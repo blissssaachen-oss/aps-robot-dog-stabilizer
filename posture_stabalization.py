@@ -110,7 +110,7 @@ class PostureStabilizer(Node):
             b0 = 1.0  # model gain (~1.0)
             wc = 3.0  # desired closed-loop BW
             w0 = 12.0  # observer BW
-            u_limit = 0.05
+            u_limit = 0.5 # clamp range
             # Derived GAINS
             kp = wc ** 2
             kd = 2.0 * wc
