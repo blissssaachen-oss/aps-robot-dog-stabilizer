@@ -114,7 +114,7 @@ class PostureStabilizer(Node):
             w0 = 10.0  # observer BW (>~5*wc): ESO speed (Nyquist: w0 < pi * fs(:945Hz) = 2969rad/s)
             
             # Derived GAINS
-            kp = 1.4 # wc ** 2
+            kp = 1.4  # wc ** 2
             kd = 4.8 # 2.0 * wc 
             # Observer GAINS (Gao canonical parametrization for 3rd-order ESO)
             beta1 = 3.0 * w0
