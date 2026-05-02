@@ -106,6 +106,7 @@ class IKSolver:
         res = scipy.optimize.minimize(self.get_error_leg, initial_guess, args=(target_ee,), method='SLSQP')  # Sequential Least Squares Programming
         return res.x
     
+    # experimental. not used.
     def solve_ik_all_legs(self, target_positions, initial_guesses=None):
         """
         Solve IK for all 4 legs simultaneously.
