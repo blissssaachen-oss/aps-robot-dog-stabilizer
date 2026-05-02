@@ -67,6 +67,7 @@ class PostureStabilizer(Node):
         # starting timer for logging time
         current_time = self.get_clock().now()
         t = (current_time - self.start_time).nanoseconds * 1e-9  # seconds
+        dt = (current_time - self.prev_time).nanoseconds * 1e-9
         self.prev_time = current_time
 
         # unpacking imu info (packaged as quaternion so turning to euler)
@@ -143,6 +144,7 @@ class PostureStabilizer(Node):
             roll_lever  = 0.09   # half lateral stance width (y-distance foot to center)
             pitch_lever = 0.10   # half fore-aft stance length (x-distance foot to center)
 
+            # produce target ee pos (leg mapping)
             targets = []
             for i in range(4):
                 x_sign = 1.0 if self.feet_home[i][0] > 0 else -1.0  # front/back
