@@ -134,20 +134,21 @@ class PostureStabilizer(Node):
             w0 = 10.0  # observer BW (>~5*wc): ESO speed (Nyquist: w0 < pi * fs(:945Hz) = 2969rad/s)
             
             # Derived GAINS
-            kp = 1.4  # wc ** 2
-            kd = 4.8 # 2.0 * wc 
+            kp = 1.0  # wc ** 2 
+            kd = 3.5 # 2.0 * wc  
             # Observer GAINS (Gao canonical parametrization for 3rd-order ESO)
             beta1 = 3.0 * w0
             beta2 = 0.5 * w0 # 3.0 * w0**2
-            beta3 = 0.1 * w0 # was w0**3 but for slow z3 accum
+            beta3 = 0.3 * w0 # was w0**3 but for slow z3 accum
 
             # clamping
             dt = np.clip(dt, 0.0005, 0.005)  # for IMU~945Hz, dt~0.001s
-            u_limit = 0.25 # clamp range
-            max_slew = 0.01 # rad/callback
+            u_limit = 0.4 # clamp range (0.25)
+            max_slew = 0.05 # rad/callback (0.01)
+            max_dz = 0.04 # meters
             # setpoints (offset resting angles)
-            roll_sp  = np.radians(0.975) 
-            pitch_sp = np.radians(-0.52) 
+            roll_sp  = np.radians(1.147) 
+            pitch_sp = np.radians(-0.611) 
             
             # ---ROLL ESO---
             if not self.r_init:
@@ -213,6 +214,7 @@ class PostureStabilizer(Node):
                 x_sign = 1.0 if self.feet_home[i][0] > 0 else -1.0  # front/back
                 y_sign = 1.0 if self.feet_home[i][1] < 0 else -1.0  # right/left
                 dz = (y_sign * u_roll * roll_lever) + (x_sign * u_pitch * pitch_lever)
+                dz = np.clip (dz, -max_dz, max_dz)
                 new_target = self.feet_home[i].copy()
                 new_target[2] += dz
                 targets.append(new_target)

@@ -2,7 +2,7 @@ import numpy as np
 
 # grep "CSV," log_walk/stand_test.txt | sed 's/.*CSV,//' > log_walk/stand_test.csv
 
-stand = np.loadtxt('log_walk/stand_test.csv', delimiter=',')
+stand = np.loadtxt('log_walk/stand_test_1.csv', delimiter=',')
 # columns: time, roll, pitch, u_roll, u_pitch, z1, z2, z3
 
 # average offset
