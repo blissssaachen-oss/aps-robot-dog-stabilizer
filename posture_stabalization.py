@@ -24,7 +24,6 @@ class PostureStabilizer(Node):
     """
     ROS2 Node for active posture stabilization using PID + IK
     """
-    # TODO
 
     def __init__(self):
         super().__init__("posture_stabilizer")
@@ -58,6 +57,13 @@ class PostureStabilizer(Node):
             self.imu_callback, 
             10)
         
+        # Subscriber that listens to updated foot targets from 'gait_node' (Gait mode only)
+        self.foot_target_sub = self.create_subscription(
+            Float64MultiArray,
+            "/foot_targets",
+            self.foot_targets_callback,
+            10)
+        
         # Publisher that sends angles to '/joint_commands'
         self.joint_command_pub = self.create_publisher(
             Float64MultiArray, 
@@ -65,6 +71,10 @@ class PostureStabilizer(Node):
             10)
 
         self.get_logger().info('Posture Stabilizer Node has started!')
+
+    def foot_targets_callback(self, msg):
+        # Reshape flat 12-float array back to (4, 3) foot positions
+        self.feet_home = np.array(msg.data).reshape(4, 3)
     
     def imu_callback(self, msg):
         # starting timer for logging time
