@@ -6,7 +6,7 @@ ROLL_OFFSET  = 1.147  # degrees — measured avg resting roll
 PITCH_OFFSET = -0.611 # degrees — measured avg resting pitch
 
 # === LOAD CSV FILES ============ 
-PREFIX = 'log_walk/sim_1' # TODO: CHANGE PREFIX
+PREFIX = 'log_walk/sim_2' # TODO: CHANGE PREFIX
 p   = np.loadtxt(f'{PREFIX}_p.csv', delimiter=',')
 adr = np.loadtxt(f'{PREFIX}_adrc.csv', delimiter=',')
 # normalize time (start from 0 + trim to same duration)
