@@ -73,8 +73,10 @@ class PostureStabilizer(Node):
         self.get_logger().info('Posture Stabilizer Node has started!')
 
     def foot_targets_callback(self, msg):
-        # Reshape flat 12-float array back to (4, 3) foot positions
-        self.feet_home = np.array(msg.data).reshape(4, 3)
+        if len(msg.data) == 12:  # only accept well-formed messages
+            self.feet_home = np.array(msg.data).reshape(4, 3) # Reshape flat 12-float array back to (4, 3) foot positions
+        else:
+            self.get_logger().warn(f"Ignored malformed /foot_targets message: {len(msg.data)} floats")
     
     def imu_callback(self, msg):
         # starting timer for logging time
@@ -88,10 +90,12 @@ class PostureStabilizer(Node):
         rot = Rotation.from_quat([q.x, q.y, q.z, q.w])
         roll, pitch, yaw = rot.as_euler('xyz')
 
-        # # IMU sanity check
+        # #IMU sanity check
         # self.get_logger().info(
         # f"RAW IMU | roll={np.degrees(roll):.2f}, pitch={np.degrees(pitch):.2f}"
         # )
+        self.get_logger().info(f"feet_home z: {self.feet_home[:,2]}")
+
 
         if CONTROLLER == "P":
             # GAINS
