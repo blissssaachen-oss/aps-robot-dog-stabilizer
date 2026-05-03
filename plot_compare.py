@@ -6,9 +6,10 @@ ROLL_OFFSET  = 1.147  # degrees — measured avg resting roll
 PITCH_OFFSET = -0.611 # degrees — measured avg resting pitch
 
 # === LOAD CSV FILES ============ 
-PREFIX = 'log_walk/sim_2' # TODO: CHANGE PREFIX
+PREFIX = 'log_walk/gait_1' # TODO: CHANGE PREFIX
 p   = np.loadtxt(f'{PREFIX}_p.csv', delimiter=',')
 adr = np.loadtxt(f'{PREFIX}_adrc.csv', delimiter=',')
+
 # normalize time (start from 0 + trim to same duration)
 p[:,0]   -= p[0,0]
 adr[:,0] -= adr[0,0]
@@ -101,4 +102,42 @@ ax.legend()
 
 plt.tight_layout()
 plt.savefig(f'{PREFIX}_effort.png')
+
+# ===============================
+# FIG 4: Gait disturbance reference vs body response
+# "what the gait is doing vs what the body actually does"
+try:
+    gait = np.loadtxt(f'{PREFIX}_gait.csv', delimiter=',')
+    gait[:,0] -= gait[0,0]
+    gait = gait[gait[:,0] <= T]
+
+    # convert FR foot z deviation to equivalent body roll disturbance
+    roll_lever   = 0.085  # meters (half lateral stance width)
+    fr_z_dev     = gait[:,1] - (-0.14)  # deviation from home z
+    disturbance_deg = np.degrees(np.arctan2(fr_z_dev, roll_lever))
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6))
+
+    # body response vs disturbance input
+    ax1.plot(gait[:,0], disturbance_deg, 'g',  alpha=0.5, label='gait disturbance (estimated)')
+    ax1.plot(p[:,0],    p_roll,          'b',  label='P roll')
+    ax1.plot(adr[:,0],  adr_roll,        'r',  label='ADRC roll')
+    ax1.axhline(0, color='k', linewidth=0.5, linestyle='--')
+    ax1.set_ylabel('degrees')
+    ax1.set_title('Disturbance Input vs Body Response — smaller gap = better rejection')
+    ax1.legend()
+
+    # FR and BL z trajectories — shows gait pattern
+    ax2.plot(gait[:,0], gait[:,1], 'b', label='FR z')
+    ax2.plot(gait[:,0], gait[:,2], 'r', label='BL z')
+    ax2.axhline(-0.14, color='k', linewidth=0.5, linestyle='--', label='home z')
+    ax2.set_ylabel('meters')
+    ax2.set_title('Foot Z Trajectories (Pair A: FR + BL)')
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.savefig(f'{PREFIX}_gait_ref.png')
+
+except FileNotFoundError:
+    print("No gait CSV found — skipping FIG 4")
 
