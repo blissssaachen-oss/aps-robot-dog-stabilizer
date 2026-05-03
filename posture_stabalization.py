@@ -209,12 +209,12 @@ class PostureStabilizer(Node):
             pitch_lever = 0.17/2   # half fore-aft stance length (x)
 
             # produce target ee pos (leg mapping)
+            home_x_signs = [1.0, 1.0, -1.0, -1.0]   # FR, FL, BR, BL
+            home_y_signs = [1.0, -1.0, 1.0, -1.0]   # FR, FL, BR, BL
             targets = []
             for i in range(4):
-                x_sign = 1.0 if self.feet_home[i][0] > 0 else -1.0  # front/back
-                y_sign = 1.0 if self.feet_home[i][1] < 0 else -1.0  # right/left
-                dz = (y_sign * u_roll * roll_lever) + (x_sign * u_pitch * pitch_lever)
-                dz = np.clip (dz, -max_dz, max_dz)
+                dz = (home_y_signs[i] * u_roll * roll_lever) + (home_x_signs[i] * u_pitch * pitch_lever)
+                # dz = np.clip (dz, -max_dz, max_dz)
                 new_target = self.feet_home[i].copy()
                 new_target[2] += dz
                 targets.append(new_target)
