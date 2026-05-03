@@ -39,8 +39,17 @@ ax1.plot(p[:,0],   p_roll,   'b', label='P roll')
 ax1.plot(adr[:,0], adr_roll, 'r', label='ADRC roll')
 ax1.axhline(0, color='k', linewidth=0.5, linestyle='--')
 ax1.set_ylabel('degrees')
+# roll subplot: to see how ADRC tracks actual roll
+# whether leading or lagging / whether smoother
+# slightly leading would mean it's predictive, smoother shows ESO filtering effect
+ax1b = ax1.twinx()
+ax1b.plot(adr[:,0], adr[:,3], 'r--', alpha=0.5, label='ADRC u_roll')
+ax1b.set_ylabel('u_roll (degrees)', color='r')
+ax1b.tick_params(axis='y', labelcolor='r')
 ax1.set_title(f'Roll  |  P RMSE={p_roll_rmse:.2f}°   ADRC RMSE={adrc_roll_rmse:.2f}°')
-ax1.legend()
+lines1, labels1 = ax1.get_legend_handles_labels()
+lines2, labels2 = ax1b.get_legend_handles_labels()
+ax1.legend(lines1 + lines2, labels1 + labels2)
 
 ax2.plot(p[:,0],   p_pitch,   'b', label='P pitch')
 ax2.plot(adr[:,0], adr_pitch, 'r', label='ADRC pitch')
@@ -53,7 +62,7 @@ plt.tight_layout()
 plt.savefig(f'{PREFIX}_comp.png')
 
 # ===============================
-# FIG 2: ADRC ESO performance (z1, z2, z3)
+# FIG 2: ADRC internal ESO accuracy (z1, z2, z3)
 # "how accurate is ESO"
 # z1 should track actual roll
 # z2 should look lika deriv of z1
@@ -62,9 +71,8 @@ fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 9))
 
 ax1.plot(adr[:,0], adr_roll, 'b',     label='actual roll (IMU)')
 ax1.plot(adr[:,0], adr[:,5] - ROLL_OFFSET, 'r--',   label='z1 (ESO estimate)')
-ax1.plot(adr[:,0], adr_roll - (adr[:,5] - ROLL_OFFSET), 'g:', label='residual error') # remove maybe
 ax1.axhline(0, color='k', linewidth=0.5, linestyle='--')
-ax1.set_ylabel('degrees'); ax1.set_title('z1 vs Actual Roll + Residual error'); ax1.legend()
+ax1.set_ylabel('degrees'); ax1.set_title('z1 vs Actual Roll'); ax1.legend()
 
 ax2.plot(adr[:,0], adr[:,6], 'r', label='z2 (velocity estimate)')
 ax2.set_ylabel('deg/s'); ax2.set_title('z2 — Angular Velocity Estimate'); ax2.legend()
@@ -79,17 +87,17 @@ plt.savefig(f'{PREFIX}_ESO.png')
 # ===============================
 # FIG 3: Control effort comparison
 # "lower effort for same result = better controller"
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6))
+fig, ax = plt.subplots(1, 1, figsize=(10, 4))
 
-ax2.plot(p[:,0],   p[:,3],   'b', label='P u_roll')
-ax2.plot(adr[:,0], adr[:,3], 'r', label='ADRC u_roll')
-ax2.axhline(0, color='k', linewidth=0.5, linestyle='--')
-ax2.set_ylabel('degrees'); ax2.set_title('Control Effort u_roll'); ax2.legend()
+ax.plot(p[:,0],   np.abs(p[:,3]),   'b-',  label='P u_roll')
+ax.plot(p[:,0],   np.abs(p[:,4]),   'b--', label='P u_pitch')
+ax.plot(adr[:,0], np.abs(adr[:,3]), 'r-',  label='ADRC u_roll')
+ax.plot(adr[:,0], np.abs(adr[:,4]), 'r--', label='ADRC u_pitch')
 
-ax2.plot(p[:,0],   p[:,4],   'b', label='P u_pitch')
-ax2.plot(adr[:,0], adr[:,4], 'r', label='ADRC u_pitch')
-ax2.axhline(0, color='k', linewidth=0.5, linestyle='--')
-ax2.set_ylabel('degrees'); ax2.set_title('Control Effort u_pitch'); ax2.legend()
+ax.axhline(0, color='k', linewidth=0.5, linestyle='--')
+ax.set_ylabel('degrees')
+ax.set_title('Control Effort (absolute)  |  solid=roll  dashed=pitch  blue=P  red=ADRC')
+ax.legend()
 
 plt.tight_layout()
 plt.savefig(f'{PREFIX}_effort.png')
