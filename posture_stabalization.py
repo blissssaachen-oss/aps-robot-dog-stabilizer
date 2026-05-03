@@ -16,8 +16,9 @@ from ik_solver import IKSolver
 
 np.set_printoptions(precision=3, suppress=True)
 
-# controller mode selection
+# ==== controller mode selection =========================
 CONTROLLER = "ADRC" # "P" or "ADRC"
+# ========================================================
 
 class PostureStabilizer(Node):
     """
@@ -77,6 +78,11 @@ class PostureStabilizer(Node):
         rot = Rotation.from_quat([q.x, q.y, q.z, q.w])
         roll, pitch, yaw = rot.as_euler('xyz')
 
+        # # IMU sanity check
+        # self.get_logger().info(
+        # f"RAW IMU | roll={np.degrees(roll):.2f}, pitch={np.degrees(pitch):.2f}"
+        # )
+
         if CONTROLLER == "P":
             # GAINS
             K_p = 1.25
@@ -126,10 +132,10 @@ class PostureStabilizer(Node):
             u_limit = 0.25 # clamp range
             max_slew = 0.01 # rad/callback
             # setpoints (offset resting angles)
-            roll_sp  = np.radians(0.975)
-            pitch_sp = np.radians(-0.52)
+            roll_sp  = np.radians(0.975) 
+            pitch_sp = np.radians(-0.52) 
             
-            # ROLL ESO
+            # ---ROLL ESO---
             if not self.r_init:
                 self.rz1 = roll;  self.r_init = True
             e = roll - self.rz1  # position error
@@ -156,7 +162,7 @@ class PostureStabilizer(Node):
             u_roll = float(np.clip(u_roll_raw, -u_limit, u_limit)) # clamp magnitude (hard limit)
             self.r_uprev = u_roll # for tracking last command
 
-            # PITCH ESO
+            # ---PITCH ESO---
             if not self.p_init:
                 self.pz1 = pitch;  self.p_init = True
             e = pitch - self.pz1 # position error
@@ -182,8 +188,7 @@ class PostureStabilizer(Node):
             u_pitch_raw = float(np.clip(u_pitch_raw, self.p_uprev-max_slew, self.p_uprev+max_slew))
             u_pitch = float(np.clip(u_pitch_raw, -u_limit, u_limit))
             self.p_uprev = u_pitch
-        
-            # u_roll, u_pitch are correction angles in radians
+            
             # lever arms convert angle correction → height delta per foot
             roll_lever  = 0.17/2   # half lateral stance width (y)
             pitch_lever = 0.17/2   # half fore-aft stance length (x)
@@ -197,6 +202,37 @@ class PostureStabilizer(Node):
                 new_target = self.feet_home[i].copy()
                 new_target[2] += dz
                 targets.append(new_target)
+            
+            """
+            ## control output mapping ver.2
+            # Build rotation matrices from control outputs (same structure as P mode)
+            # not suitable for ADRC on ground b/c ground contact fights x,y movement -> ESO sees persistent error.
+            # must use dz method for ADRC
+            # just keep it for now, will be useful for gait mode
+            
+            R_y = np.array([
+                [ np.cos(u_pitch), 0, np.sin(u_pitch)],
+                [ 0,               1, 0              ],
+                [-np.sin(u_pitch), 0, np.cos(u_pitch)]
+            ])
+            R_x = np.array([
+                [1, 0,              0             ],
+                [0, np.cos(u_roll), -np.sin(u_roll)],
+                [0, np.sin(u_roll),  np.cos(u_roll)]
+            ])
+            R_total = R_y @ R_x
+            
+            targets = []
+            for i in range(4):
+                rotated = R_total @ self.feet_home[i]
+                delta = rotated - self.feet_home[i]
+
+                new_target = self.feet_home[i].copy()
+                new_target[2] += delta[2]        # z correction 
+                new_target[0] += delta[0] * 0.3  # x correction (partial — fore/aft has some compliance)
+                # new_target[1] += delta[1]      # y correction (skip — lateral is ground-constrained)
+                targets.append(new_target)
+            """
     
         # finds all corresponding joint angles
         joint_angles = self.ik.solve_ik_all_legs(targets)
@@ -207,21 +243,23 @@ class PostureStabilizer(Node):
         self.joint_command_pub.publish(cmd)
 
         #logging
-        self.get_logger().info(
-            # Below is for logging r/p calibrated (P MODE)
-            # f"time={t:.2f}, roll={(np.degrees(roll) +0.35):.2f}, pitch={(np.degrees(pitch) -2.05):.2f}"
-            # Below is for logging r/p (ADRC)
-            # f"time={t:.2f}, roll={(np.degrees(roll)):.2f}, pitch={(np.degrees(pitch)):.2f}"
-            # Below is for logging r/p + u_r/u_p(ADRC)
-            f"time={t:.2f}, roll={(np.degrees(roll)):.2f}, pitch={(np.degrees(pitch)):.2f}, u_roll={(np.degrees(u_roll)):.2f}, u_pitch={(np.degrees(u_pitch)):.2f}"
-        )
+        if CONTROLLER == "P":  
+            self.get_logger().info(
+                f"time={t:.2f}, roll={np.degrees(roll):.2f}, pitch={np.degrees(pitch):.2f}, "
+                f"u_roll={np.degrees(K_p*roll):.2f}, u_pitch={np.degrees(K_p*pitch):.2f}"
+                )
 
-        #logging (ADRC specific)
-        self.get_logger().info(
-            f"t={t:.2f} | roll={np.degrees(roll):.2f} "
-            f"z1={np.degrees(self.rz1):.2f} z2={np.degrees(self.rz2):.2f} z3={self.rz3:.4f} "
-            f"u={np.degrees(u_roll):.2f}"
-        )
+        elif CONTROLLER == "ADRC":
+            #logging (ADRC specific)
+            self.get_logger().info(
+                # Below is for logging r/p + u_r/u_p(ADRC)
+                f"time={t:.2f}, roll={(np.degrees(roll)):.2f}, pitch={(np.degrees(pitch)):.2f}, u_roll={(np.degrees(u_roll)):.2f}, u_pitch={(np.degrees(u_pitch)):.2f}"
+            )
+            self.get_logger().info(
+                f"t={t:.2f} | roll={np.degrees(roll):.2f} "
+                f"z1={np.degrees(self.rz1):.2f} z2={np.degrees(self.rz2):.2f} z3={self.rz3:.4f} "
+                f"u={np.degrees(u_roll):.2f}"
+            )
 
 def main(args=None):
     rclpy.init(args=args)
