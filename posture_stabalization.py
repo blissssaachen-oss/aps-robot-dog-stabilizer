@@ -17,7 +17,7 @@ from ik_solver import IKSolver
 np.set_printoptions(precision=3, suppress=True)
 
 # ==== controller mode selection =========================
-CONTROLLER = "ADRC" # "P" or "ADRC"
+CONTROLLER = "P" # "P" or "ADRC"
 # ========================================================
 
 class PostureStabilizer(Node):
@@ -257,23 +257,18 @@ class PostureStabilizer(Node):
         self.joint_command_pub.publish(cmd)
 
         #logging
-        if CONTROLLER == "P":  
-            self.get_logger().info(
-                f"time={t:.2f}, roll={np.degrees(roll):.2f}, pitch={np.degrees(pitch):.2f}, "
-                f"u_roll={np.degrees(K_p*roll):.2f}, u_pitch={np.degrees(K_p*pitch):.2f}"
-                )
+        if CONTROLLER == "ADRC":
+            u_r, u_p = u_roll, u_pitch
+            z1, z2, z3 = np.degrees(self.rz1), np.degrees(self.rz2), self.rz3
+        else:
+            u_r, u_p = K_p * roll, K_p * pitch
+            z1, z2, z3 = 0.0, 0.0, 0.0
 
-        elif CONTROLLER == "ADRC":
-            #logging (ADRC specific)
-            self.get_logger().info(
-                # Below is for logging r/p + u_r/u_p(ADRC)
-                f"time={t:.2f}, roll={(np.degrees(roll)):.2f}, pitch={(np.degrees(pitch)):.2f}, u_roll={(np.degrees(u_roll)):.2f}, u_pitch={(np.degrees(u_pitch)):.2f}"
-            )
-            self.get_logger().info(
-                f"t={t:.2f} | roll={np.degrees(roll):.2f} "
-                f"z1={np.degrees(self.rz1):.2f} z2={np.degrees(self.rz2):.2f} z3={self.rz3:.4f} "
-                f"u={np.degrees(u_roll):.2f}"
-            )
+        self.get_logger().info(
+            f"CSV,{t:.3f},{np.degrees(roll):.3f},{np.degrees(pitch):.3f},"
+            f"{np.degrees(u_r):.3f},{np.degrees(u_p):.3f},"
+            f"{z1:.3f},{z2:.3f},{z3:.6f}"
+        )
 
 def main(args=None):
     rclpy.init(args=args)
@@ -291,7 +286,8 @@ def main(args=None):
         node.joint_command_pub.publish(zero_cmd)
         
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
