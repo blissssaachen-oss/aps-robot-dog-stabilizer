@@ -17,7 +17,7 @@ from ik_solver import IKSolver
 np.set_printoptions(precision=3, suppress=True)
 
 # ==== controller mode selection =========================
-CONTROLLER = "ADRC" # "P" or "ADRC"
+CONTROLLER = "P" # "P" or "ADRC"
 # ========================================================
 
 class PostureStabilizer(Node):

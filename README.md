@@ -29,7 +29,7 @@ python3 posture_stabalization.py
 ```
 To log data, (**TODO: only change PREFIX**)
 ```bash
-PREFIX=log_walk/sim_3_adrc
+PREFIX=log_walk/stand_p
 RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}.txt
 ```
 *n.b. When done, first kill B -> C.* \
