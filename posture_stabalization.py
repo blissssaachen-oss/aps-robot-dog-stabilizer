@@ -134,12 +134,12 @@ class PostureStabilizer(Node):
             w0 = 10.0  # observer BW (>~5*wc): ESO speed (Nyquist: w0 < pi * fs(:945Hz) = 2969rad/s)
             
             # Derived GAINS
-            kp = 1.0  # wc ** 2 
+            kp = 1.2  # wc ** 2 (prev: 1.0)
             kd = 3.5 # 2.0 * wc 
             # Observer GAINS (Gao canonical parametrization for 3rd-order ESO)
             beta1 = 3.0 * w0
             beta2 = 0.5 * w0 # 3.0 * w0**2
-            beta3 = 0.3 * w0 # was w0**3 but for slow z3 accum
+            beta3 = 0.1 * w0 # was w0**3 but for slow z3 accum # prev: 0.3
 
             # clamping
             dt = np.clip(dt, 0.0005, 0.005)  # for IMU~945Hz, dt~0.001s
@@ -148,7 +148,7 @@ class PostureStabilizer(Node):
             max_dz = 0.04 # meters
             # setpoints (offset resting angles)
             roll_sp  = np.radians(1.147) 
-            pitch_sp = np.radians(-0.611) 
+            pitch_sp = np.radians(0.0) # prev: -0.611
             
             # ---ROLL ESO---
             if not self.r_init:
@@ -206,7 +206,7 @@ class PostureStabilizer(Node):
             
             # lever arms convert angle correction → height delta per foot
             roll_lever  = 0.17/2   # half lateral stance width (y)
-            pitch_lever = 0.17/2   # half fore-aft stance length (x)
+            pitch_lever = 0.10   # half fore-aft stance length (x) (prev: 0.17/2 = 0.085)
 
             # produce target ee pos (leg mapping)
             home_x_signs = [1.0, 1.0, -1.0, -1.0]   # FR, FL, BR, BL

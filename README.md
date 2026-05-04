@@ -29,9 +29,8 @@ python3 posture_stabalization.py
 ```
 To log data, (**TODO: only change PREFIX**)
 ```bash
-PREFIX=log_walk/gait_1
-RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}_p.txt
-RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}_adrc.txt
+PREFIX=log_walk/gait_3_adrc
+RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}.txt
 ```
 *n.b. When done, first kill B -> C.* \
 *n.b. When LOGGING,run B first and C with tee (to ensure log starts after gait launch)* \
@@ -40,9 +39,8 @@ For comparison test: **repeat Terminals A-B-C all** to ensure same start state
 ## 2. To log
 (**TODO: only change PREFIX**)
 ```bash
-PREFIX=log_walk/gait_1
-grep "CSV," ${PREFIX}_p.txt | sed 's/.*CSV,//' > ${PREFIX}_p.csv
-grep "CSV," ${PREFIX}_adrc.txt | sed 's/.*CSV,//' > ${PREFIX}_adrc.csv
+PREFIX=log_walk/gait_3_adrc
+grep "CSV," ${PREFIX}.txt | sed 's/.*CSV,//' > ${PREFIX}.csv
 ```
 
 *after logging both for P -> ADRC, then plot:*

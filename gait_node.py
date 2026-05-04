@@ -44,14 +44,14 @@ class GaitNode(Node):
 
         # Waypoints (relative to home) (adapted from Lab3)
         # 6 waypoints per leg per cycle:
-        # touchdown - stand1 - stand2 - stand3 - liftoff - mid_swing
-        touch_down  = np.array([ 0.02,  0,  0.00])  # front of stance, on ground
-        stand_1     = np.array([ 0.01, 0,  0.00])
-        stand_2     = np.array([ 0.00,  0,  0.00])
-        stand_3     = np.array([-0.01, 0,  0.00])
-        liftoff     = np.array([-0.02,  0,  0.00])  # back of stance, lifts off
-        mid_swing   = np.array([ 0.00,  0,  0.03])  # peak of swing
- 
+        # touchdown - stand1 - stand2 - stand3 - liftoff - mid_swing        
+        touch_down = np.array([ 0.01,  0, 0.00])
+        stand_1    = np.array([ 0.005, 0, 0.00])
+        stand_2    = np.array([ 0.00,  0, 0.00])
+        stand_3    = np.array([-0.005, 0, 0.00])
+        liftoff    = np.array([-0.01,  0, 0.00])
+        mid_swing  = np.array([ 0.00,  0, 0.02])
+
         # Waypoint sequences per leg
         # Pair A (FR=0, BL=3): starts at touchdown
         # Pair B (FL=1, BR=2): starts at stand_3 (half cycle offset)
