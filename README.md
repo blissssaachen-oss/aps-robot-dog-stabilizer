@@ -39,7 +39,7 @@ For comparison test: **repeat Terminals A-B-C all** to ensure same start state
 ## 2. To log
 (**TODO: only change PREFIX**)
 ```bash
-PREFIX=log_walk/gait_4_adrc
+PREFIX=log_walk/gait_4_p
 grep "CSV," ${PREFIX}.txt | sed 's/.*CSV,//' > ${PREFIX}.csv
 ```
 
