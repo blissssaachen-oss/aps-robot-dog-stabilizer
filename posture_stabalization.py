@@ -135,7 +135,7 @@ class PostureStabilizer(Node):
             
             # Derived GAINS
             kp = 1.0  # wc ** 2 
-            kd = 3.5 # 2.0 * wc  
+            kd = 3.5 # 2.0 * wc 
             # Observer GAINS (Gao canonical parametrization for 3rd-order ESO)
             beta1 = 3.0 * w0
             beta2 = 0.5 * w0 # 3.0 * w0**2
@@ -143,8 +143,8 @@ class PostureStabilizer(Node):
 
             # clamping
             dt = np.clip(dt, 0.0005, 0.005)  # for IMU~945Hz, dt~0.001s
-            u_limit = 0.4 # clamp range (0.25)
-            max_slew = 0.05 # rad/callback (0.01)
+            u_limit = 0.45 # clamp range (0.25)
+            max_slew = 0.03 # rad/callback (correction rate)
             max_dz = 0.04 # meters
             # setpoints (offset resting angles)
             roll_sp  = np.radians(1.147) 

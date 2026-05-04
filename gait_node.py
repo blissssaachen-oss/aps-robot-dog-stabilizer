@@ -15,7 +15,7 @@ from std_msgs.msg import Float64MultiArray
 import numpy as np
 
 # Gait parameters
-GAIT_CYCLE_TIME = 1.0   # seconds per full cycle
+GAIT_CYCLE_TIME = 1.5   # seconds per full cycle (higher=slower)
 PUBLISH_RATE   = 100.0  # Hz — how often foot targets are published
 # SWING_HEIGHT   = 0.03   # meters: for dz-swing sim- how high feet lift during swing
 
