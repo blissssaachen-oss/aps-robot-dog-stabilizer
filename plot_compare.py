@@ -7,7 +7,7 @@ PITCH_OFFSET = -0.611 # degrees — measured avg resting pitch
 
 
 # === LOAD CSV FILES ============ 
-PREFIX = 'log_walk/gait_1' # TODO: CHANGE PREFIX
+PREFIX = 'log_walk/gait_4' # TODO: CHANGE PREFIX
 p   = np.loadtxt(f'{PREFIX}_p.csv', delimiter=',')
 adr = np.loadtxt(f'{PREFIX}_adrc.csv', delimiter=',')
 
