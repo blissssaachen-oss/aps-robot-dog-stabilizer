@@ -38,16 +38,19 @@ class GaitNode(Node):
         self.pair_a = [0, 3]  # FR, BL — phase = 0
         self.pair_b = [1, 2]  # FL, BR — phase = pi (opposite)
         '''
+        # startup delay
+        self.startup_done = False
+        self.startup_time = 2.0  # seconds to hold still before gait starts
 
         # Waypoints (relative to home) (adapted from Lab3)
         # 6 waypoints per leg per cycle:
         # touchdown - stand1 - stand2 - stand3 - liftoff - mid_swing
-        touch_down  = np.array([ 0.03,  0,  0.00])  # front of stance, on ground
-        stand_1     = np.array([ 0.015, 0,  0.00])
+        touch_down  = np.array([ 0.02,  0,  0.00])  # front of stance, on ground
+        stand_1     = np.array([ 0.01, 0,  0.00])
         stand_2     = np.array([ 0.00,  0,  0.00])
-        stand_3     = np.array([-0.015, 0,  0.00])
-        liftoff     = np.array([-0.03,  0,  0.00])  # back of stance, lifts off
-        mid_swing   = np.array([ 0.00,  0,  0.05])  # peak of swing
+        stand_3     = np.array([-0.01, 0,  0.00])
+        liftoff     = np.array([-0.02,  0,  0.00])  # back of stance, lifts off
+        mid_swing   = np.array([ 0.00,  0,  0.03])  # peak of swing
  
         # Waypoint sequences per leg
         # Pair A (FR=0, BL=3): starts at touchdown
@@ -91,6 +94,14 @@ class GaitNode(Node):
     def publish_targets(self):
         current_time = self.get_clock().now()
         t = (current_time - self.start_time).nanoseconds * 1e-9  # seconds
+        #######################
+        if t < self.startup_time:
+            # publish home positions — stand still
+            msg = Float64MultiArray()
+            msg.data = self.feet_home.flatten().tolist()
+            self.foot_target_pub.publish(msg)
+            return  # skip gait until startup complete
+        #######################
 
         # normalized cycle time [0, 1)
         t_norm = (t % GAIT_CYCLE_TIME) / GAIT_CYCLE_TIME
