@@ -29,7 +29,7 @@ python3 posture_stabalization.py
 ```
 To log data, (**TODO: only change PREFIX**)
 ```bash
-PREFIX=log_walk/gait_4_adrc
+PREFIX=log_walk/sim_3_adrc
 RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}.txt
 ```
 *n.b. When done, first kill B -> C.* \
@@ -39,7 +39,7 @@ For comparison test: **repeat Terminals A-B-C all** to ensure same start state
 ## 2. To log
 (**TODO: only change PREFIX**)
 ```bash
-PREFIX=log_walk/gait_4_p
+PREFIX=log_walk/sim_3_adrc
 grep "CSV," ${PREFIX}.txt | sed 's/.*CSV,//' > ${PREFIX}.csv
 ```
 

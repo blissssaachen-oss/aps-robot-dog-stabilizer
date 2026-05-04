@@ -14,10 +14,14 @@ from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
 import numpy as np
 
+# ==== MODE SELECTION ====
+GAIT_MODE = "DZ_SIM"  # "TROT" or "DZ_SIM"
+# ========================
+
 # Gait parameters
 GAIT_CYCLE_TIME = 1.5   # seconds per full cycle (higher=slower)
 PUBLISH_RATE   = 100.0  # Hz — how often foot targets are published
-# SWING_HEIGHT   = 0.03   # meters: for dz-swing sim- how high feet lift during swing
+SWING_HEIGHT   = 0.03   # meters: for dz-swing sim. how high feet lift during swing
 
 class GaitNode(Node):
 
@@ -32,12 +36,6 @@ class GaitNode(Node):
             [-0.11,  0.09, -0.14],  # BL (index 3)
         ])
 
-        '''
-        # For dz-swing sim: Diagonal trot pairs
-        # Pair A: FR + BL,  Pair B: FL + BR
-        self.pair_a = [0, 3]  # FR, BL — phase = 0
-        self.pair_b = [1, 2]  # FL, BR — phase = pi (opposite)
-        '''
         # startup delay
         self.startup_done = False
         self.startup_time = 2.0  # seconds to hold still before gait starts
@@ -94,41 +92,33 @@ class GaitNode(Node):
     def publish_targets(self):
         current_time = self.get_clock().now()
         t = (current_time - self.start_time).nanoseconds * 1e-9  # seconds
-        #######################
+        
+        # startup delay
         if t < self.startup_time:
             # publish home positions — stand still
             msg = Float64MultiArray()
             msg.data = self.feet_home.flatten().tolist()
             self.foot_target_pub.publish(msg)
             return  # skip gait until startup complete
-        #######################
 
         # normalized cycle time [0, 1)
         t_norm = (t % GAIT_CYCLE_TIME) / GAIT_CYCLE_TIME
 
         targets = self.feet_home.copy()
 
-        # omega = 2.0 * np.pi * GAIT_FREQ  # angular frequency
-
         for i in range(4):
-            offset = self.interpolate_waypoints(t_norm, i)
-            targets[i][0] += offset[0]   # x: fore/aft swing
-            targets[i][2] += offset[2]   # z: lift height
-            # y unchanged — no lateral movement
+            if GAIT_MODE == "TROT":
+                offset = self.interpolate_waypoints(t_norm, i)
+                targets[i][0] += offset[0] # x: fore/aft swing
+                targets[i][2] += offset[2] # z: lift height
+                # y unchanged — no lateral movement
 
-            '''
-            For dz-swing sim
-            # Pair A is phase 0, Pair B is phase pi
-            phase = 0.0 if i in self.pair_a else np.pi
-
-            # Sinusoidal swing: only lift during positive half of sine wave
-            # sin > 0 → foot is in swing phase (lifted)
-            # sin <= 0 → foot is in stance phase (on ground, no z change)
-            swing = np.sin(omega * t + phase)
-            dz = SWING_HEIGHT * max(0.0, swing)  # only lift, never push into ground
-
-            targets[i][2] += dz
-            '''
+            elif GAIT_MODE == "DZ_SIM":
+                pair_a = [0, 3] # pair A is phase 0, pair B is phase pi
+                omega  = 2.0 * np.pi / GAIT_CYCLE_TIME
+                phase  = 0.0 if i in pair_a else np.pi
+                swing  = np.sin(omega * t + phase) # Sinusoidal swing: only lift during positive half of sine wave
+                targets[i][2] += SWING_HEIGHT * max(0.0, swing)
   
         # Flatten to 12 floats: [FR_x, FR_y, FR_z, FL_x, FL_y, FL_z, ...]
         msg = Float64MultiArray()
