@@ -33,7 +33,6 @@ PREFIX=log_walk/gait_1
 RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}_p.txt
 RCUTILS_COLORIZED_OUTPUT=0 python3 posture_stabalization.py 2>&1 | tee ${PREFIX}_adrc.txt
 ```
-
 *n.b. When done, first kill B -> C.* \
 *n.b. When LOGGING,run B first and C with tee (to ensure log starts after gait launch)* \
 For comparison test: **repeat Terminals A-B-C all** to ensure same start state

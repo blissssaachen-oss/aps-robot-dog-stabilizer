@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 ROLL_OFFSET  = 1.147  # degrees — measured avg resting roll
 PITCH_OFFSET = -0.611 # degrees — measured avg resting pitch
 
+
 # === LOAD CSV FILES ============ 
 PREFIX = 'log_walk/gait_1' # TODO: CHANGE PREFIX
 p   = np.loadtxt(f'{PREFIX}_p.csv', delimiter=',')
@@ -103,11 +104,13 @@ ax.legend()
 plt.tight_layout()
 plt.savefig(f'{PREFIX}_effort.png')
 
+
 # ===============================
 # FIG 4: Gait disturbance reference vs body response
 # "what the gait is doing vs what the body actually does"
+
 try:
-    gait = np.loadtxt(f'{PREFIX}_gait.csv', delimiter=',')
+    gait = np.loadtxt(f'{PREFIX}_adrc.csv', delimiter=',')
     gait[:,0] -= gait[0,0]
     gait = gait[gait[:,0] <= T]
 
@@ -136,7 +139,7 @@ try:
     ax2.legend()
 
     plt.tight_layout()
-    plt.savefig(f'{PREFIX}_gait_ref.png')
+    plt.savefig(f'{PREFIX}_ref.png')
 
 except FileNotFoundError:
     print("No gait CSV found — skipping FIG 4")
